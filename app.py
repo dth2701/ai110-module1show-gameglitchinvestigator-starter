@@ -1,33 +1,16 @@
 import random
 import streamlit as st
-from logic_utils import check_guess
+from logic_utils import check_guess, parse_guess
 
+#FIX: fixing the numbers to be dynamic based on difficulty level.
 def get_range_for_difficulty(difficulty: str):
     if difficulty == "Easy":
         return 1, 20
     if difficulty == "Normal":
-        return 1, 100
-    if difficulty == "Hard":
         return 1, 50
+    if difficulty == "Hard":
+        return 1, 100
     return 1, 100
-
-
-def parse_guess(raw: str):
-    if raw is None:
-        return False, None, "Enter a guess."
-
-    if raw == "":
-        return False, None, "Enter a guess."
-
-    try:
-        if "." in raw:
-            value = int(float(raw))
-        else:
-            value = int(raw)
-    except Exception:
-        return False, None, "That is not a number."
-
-    return True, value, None
 
 
 def update_score(current_score: int, outcome: str, attempt_number: int):
@@ -60,9 +43,10 @@ difficulty = st.sidebar.selectbox(
     index=1,
 )
 
+# FIX: Adjusted attempt limits to be more balanced across difficulties.
 attempt_limit_map = {
-    "Easy": 6,
-    "Normal": 8,
+    "Easy": 8,
+    "Normal": 6,
     "Hard": 5,
 }
 attempt_limit = attempt_limit_map[difficulty]
@@ -90,7 +74,7 @@ if "history" not in st.session_state:
 st.subheader("Make a guess")
 
 st.info(
-    f"Guess a number between 1 and 100. "
+    f"Guess a number between {low} and {high}. " #FIX: Added range info to the main game area.
     f"Attempts left: {attempt_limit - st.session_state.attempts}"
 )
 
@@ -116,7 +100,8 @@ with col3:
 
 if new_game:
     st.session_state.attempts = 0
-    st.session_state.secret = random.randint(1, 100)
+    st.session_state.secret = random.randint(low, high) # Generate new secret for new game
+    st.session_state.status = "playing" # Reset status to playing for new game
     st.success("New game started.")
     st.rerun()
 
@@ -128,14 +113,16 @@ if st.session_state.status != "playing":
     st.stop()
 
 if submit:
-    st.session_state.attempts += 1
-
+    #FIX : only increase attempt counter on a valid guess
     ok, guess_int, err = parse_guess(raw_guess)
 
     if not ok:
-        st.session_state.history.append(raw_guess)
         st.error(err)
+    #FIX: Rejects out-of-range guesses
+    elif guess_int < low or guess_int > high:
+        st.error(f"Guess must be between {low} and {high}.")
     else:
+        st.session_state.attempts += 1
         st.session_state.history.append(guess_int)
 
         #FIX: Refactored check_guess logic into logic_utils.py using agent mode
