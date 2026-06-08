@@ -1,16 +1,11 @@
 import random
 import streamlit as st
-from logic_utils import check_guess, parse_guess
-
-#FIX: fixing the numbers to be dynamic based on difficulty level.
-def get_range_for_difficulty(difficulty: str):
-    if difficulty == "Easy":
-        return 1, 20
-    if difficulty == "Normal":
-        return 1, 50
-    if difficulty == "Hard":
-        return 1, 100
-    return 1, 100
+from logic_utils import (
+    check_guess,
+    parse_guess,
+    get_range_for_difficulty,
+    regenerate_secret,
+)
 
 
 def update_score(current_score: int, outcome: str, attempt_number: int):
@@ -56,6 +51,9 @@ low, high = get_range_for_difficulty(difficulty)
 st.sidebar.caption(f"Range: {low} to {high}")
 st.sidebar.caption(f"Attempts allowed: {attempt_limit}")
 
+if "difficulty" not in st.session_state:
+    st.session_state.difficulty = difficulty
+
 if "secret" not in st.session_state:
     st.session_state.secret = random.randint(low, high)
 
@@ -69,6 +67,17 @@ if "status" not in st.session_state:
     st.session_state.status = "playing"
 
 if "history" not in st.session_state:
+    st.session_state.history = []
+
+# FIX: When the difficulty changes mid-game, the range changes too, so the
+# old secret may fall outside it (e.g. Hard secret=80 -> Easy range 1-20),
+# making the game unwinnable. Regenerate the secret within the new range and
+# start a fresh round.
+if st.session_state.difficulty != difficulty:
+    st.session_state.difficulty = difficulty
+    st.session_state.secret = regenerate_secret(difficulty)
+    st.session_state.attempts = 0
+    st.session_state.status = "playing"
     st.session_state.history = []
 
 st.subheader("Make a guess")

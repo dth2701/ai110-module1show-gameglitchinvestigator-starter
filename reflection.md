@@ -64,6 +64,7 @@ Second bug ("New Game" button didn't actually restart the game): I ran a manual 
 First Bug (a "Too High/Low" hint): Yes. The AI helped me get the tests running in the first place — when pytest failed with ModuleNotFoundError: No module named 'logic_utils', it explained that the test folder wasn't on Python's import path and showed me how to fix it. It also helped me understand why each test was structured as check_guess(guess, secret) returning an (outcome, message) tuple, so I could read the asserts and know exactly which behavior each test was protecting.
 
 Second bug ("New Game" button didn't actually restart the game): Yes. For the "New Game" bug, the AI helped me design the manual test rather than just running a random check. It suggested I reproduce the failure on purpose first — deliberately lose a game so the status became "over" — and then use the Developer Debug Info expander as my observation tool, watching whether the secret actually changed and whether attempts reset to 0 after clicking New Game. It also helped me understand why those were the right things to check: since the bug was in st.session_state, the test had to confirm the session state was being reset, not just that the button looked clickable. That made my manual test intentional and tied to the actual cause instead of being a guess.
+
 ---
 
 ## 4. What did you learn about Streamlit and state?
