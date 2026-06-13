@@ -6,6 +6,7 @@ from logic_utils import (
     get_range_for_difficulty,
     regenerate_secret,
     update_score,
+    update_high_score,
 )
 
 st.set_page_config(page_title="Glitchy Guesser", page_icon="🎮")
@@ -52,6 +53,19 @@ if "status" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
+# Best score per difficulty, kept only in session state (in-memory). This is
+# intentionally NOT persisted to disk, so a full page refresh starts a new
+# session and resets every high score back to 0.
+if "high_scores" not in st.session_state:
+    st.session_state.high_scores = {"Easy": 0, "Normal": 0, "Hard": 0}
+
+st.sidebar.divider()
+st.sidebar.subheader("🏆 High Scores")
+for level in ["Easy", "Normal", "Hard"]:
+    best = st.session_state.high_scores.get(level, 0)
+    marker = " ⬅️" if level == difficulty else ""
+    st.sidebar.caption(f"{level}: {best}{marker}")
+
 # FIX: When the difficulty changes mid-game, the range changes too, so the
 # old secret may fall outside it (e.g. Hard secret=80 -> Easy range 1-20),
 # making the game unwinnable. Regenerate the secret within the new range and
@@ -62,6 +76,9 @@ if st.session_state.difficulty != difficulty:
     st.session_state.attempts = 0
     st.session_state.status = "playing"
     st.session_state.history = []
+    # Score is per-round, not cumulative. Reset it so the new round (and the
+    # high score it competes for) reflects only this difficulty's play.
+    st.session_state.score = 0
 
 st.subheader("Make a guess")
 
@@ -94,6 +111,8 @@ if new_game:
     st.session_state.attempts = 0
     st.session_state.secret = random.randint(low, high) # Generate new secret for new game
     st.session_state.status = "playing" # Reset status to playing for new game
+    st.session_state.score = 0  # Start each round's score from scratch
+    st.session_state.history = []  # Clear last round's guesses too
     st.success("New game started.")
     st.rerun()
 
@@ -135,6 +154,17 @@ if submit:
                 f"You won! The secret was {st.session_state.secret}. "
                 f"Final score: {st.session_state.score}"
             )
+
+            # Record the win against the session best for this difficulty.
+            st.session_state.high_scores, is_record = update_high_score(
+                st.session_state.high_scores,
+                difficulty,
+                st.session_state.score,
+            )
+            if is_record:
+                st.success(
+                    f"🏆 New {difficulty} high score: {st.session_state.score}!"
+                )
         else:
             if st.session_state.attempts >= attempt_limit:
                 st.session_state.status = "lost"
