@@ -71,11 +71,21 @@ Second bug ("New Game" button didn't actually restart the game): Yes. For the "N
 
 - How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?
 
+Streamlit "reruns" mean the whole script runs top-to-bottom again every time you click a button or change an input, like refreshing a page. Session state is a special storage box that survives those reruns, so values you want to keep (like a score or secret number) don't reset each time.
+
 ---
 
 ## 5. Looking ahead: your developer habits
 
-- What is one habit or strategy from this project that you want to reuse in future labs or projects?
+- What is one habit or strategy from this project that you want to reuse in future labs or projects? 
   - This could be a testing habit, a prompting strategy, or a way you used Git.
+
+One habit I want to reuse is asking AI to point me to the specific variable or function tied to a bug and explain what that code actually does. This helped me understand the problem before changing anything, instead of guessing and editing blindly.
+
 - What is one thing you would do differently next time you work with AI on a coding task?
+
+Next time I would always ask "what are the possible side effects of this change?" before accepting it. That way I can catch problems the fix might create elsewhere instead of only focusing on the one bug in front of me.
+
 - In one or two sentences, describe how this project changed the way you think about AI generated code.
+
+This project showed me that AI is most valuable for helping me navigate and understand a large codebase quickly, especially when there are too many files to read through on my own. Instead of writing all the code for me, AI helped me find the right place to look faster and work more efficiently.
